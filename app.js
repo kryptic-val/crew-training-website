@@ -5,6 +5,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const { passport } = require('./config/auth');
 const { userToLocals } = require('./config/middleware');
+//test git branch
 
 const app = express();
 const PORT = process.env.PORT || 3000;
