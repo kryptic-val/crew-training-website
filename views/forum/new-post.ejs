@@ -1,0 +1,191 @@
+<%- include('../partials/header') %>
+
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/forum">Forum</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Create New Post</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Create New Post
+                </h4>
+            </div>
+            <div class="card-body">
+                <form action="/forum/new-post" method="POST" id="newPostForm">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Post Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" required 
+                               placeholder="Enter a descriptive title for your post">
+                        <div class="form-text">Make your title clear and specific to help others find your post.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="categoryId" class="form-label">Category *</label>
+                        <select class="form-select" id="categoryId" name="categoryId" required>
+                            <option value="">Select a category</option>
+                            <% categories.forEach(category => { %>
+                                <option value="<%= category.id %>" 
+                                        <%= req.query.category === category.id ? 'selected' : '' %>>
+                                    <%= category.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                        <div class="form-text">Choose the most appropriate category for your post.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Post Content *</label>
+                        <textarea class="form-control" id="content" name="content" rows="10" required
+                                  placeholder="Share your thoughts, questions, or experiences..."></textarea>
+                        <div class="form-text">
+                            Be clear and detailed. You can use basic formatting like line breaks.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyReplies" name="notifyReplies">
+                            <label class="form-check-label" for="notifyReplies">
+                                Notify me of replies to this post
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/forum" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Create Post
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Posting Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Be respectful and constructive
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Stay on topic with the category
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Use clear, descriptive titles
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Provide relevant details
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Check for similar posts first
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Available Categories</h6>
+            </div>
+            <div class="card-body">
+                <% if (categories && categories.length > 0) { %>
+                    <% categories.forEach(category => { %>
+                        <div class="mb-2">
+                            <strong><%= category.name %></strong>
+                            <p class="text-muted small mb-0">
+                                <%= category.description || 'No description available' %>
+                            </p>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <p class="text-muted small">No categories available yet.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('newPostForm').addEventListener('submit', function(e) {
+    const title = document.getElementById('title').value.trim();
+    const categoryId = document.getElementById('categoryId').value;
+    const content = document.getElementById('content').value.trim();
+    
+    // Basic validation
+    if (!title || !categoryId || !content) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+    }
+    
+    if (title.length < 5) {
+        e.preventDefault();
+        alert('Title must be at least 5 characters long.');
+        return false;
+    }
+    
+    if (content.length < 10) {
+        e.preventDefault();
+        alert('Content must be at least 10 characters long.');
+        return false;
+    }
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...';
+    submitBtn.disabled = true;
+});
+
+// Auto-resize textarea
+document.getElementById('content').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
+
+// Character counter
+document.getElementById('content').addEventListener('input', function() {
+    const maxLength = 5000;
+    const currentLength = this.value.length;
+    const remaining = maxLength - currentLength;
+    
+    let counter = document.getElementById('charCounter');
+    if (!counter) {
+        counter = document.createElement('div');
+        counter.id = 'charCounter';
+        counter.className = 'form-text text-end';
+        this.parentNode.appendChild(counter);
+    }
+    
+    counter.textContent = `${currentLength}/${maxLength} characters`;
+    
+    if (remaining < 100) {
+        counter.className = 'form-text text-end text-warning';
+    } else {
+        counter.className = 'form-text text-end';
+    }
+});
+</script>
+
+<%- include('../partials/footer') %> 

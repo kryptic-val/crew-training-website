@@ -1,0 +1,121 @@
+<%- include('../partials/header') %>
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Community Forum</h1>
+            <% if (isAuthenticated) { %>
+                <a href="/forum/new-post" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create New Post
+                </a>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger" role="alert">
+        <%= error %>
+    </div>
+<% } %>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Forum Categories</h5>
+            </div>
+            <div class="card-body">
+                <% if (categories && categories.length > 0) { %>
+                    <div class="row">
+                        <% categories.forEach(category => { %>
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-folder me-2 text-primary"></i>
+                                            <%= category.name %>
+                                        </h6>
+                                        <p class="card-text text-muted small">
+                                            <%= category.description || 'No description available' %>
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <%= category.postCount || 0 %> posts
+                                            </small>
+                                            <a href="/forum/category/<%= category.id %>" class="btn btn-sm btn-outline-primary">
+                                                View Posts
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <h5>No categories available</h5>
+                        <p class="text-muted">Forum categories will appear here once created.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <% if (isAuthenticated) { %>
+                        <a href="/forum/new-post" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create New Post
+                        </a>
+                    <% } else { %>
+                        <a href="/auth/login" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Post
+                        </a>
+                    <% } %>
+                    
+                    <form action="/forum/search" method="GET" class="d-flex">
+                        <input type="text" name="q" class="form-control me-2" placeholder="Search posts...">
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Forum Rules</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Be respectful to other members
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Stay on topic in discussions
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        No spam or advertising
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Use appropriate language
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %> 

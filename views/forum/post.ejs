@@ -1,0 +1,245 @@
+<%- include('../partials/header') %>
+
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/forum">Forum</a></li>
+                <li class="breadcrumb-item"><a href="/forum/category/<%= category.id %>"><%= category.name %></a></li>
+                <li class="breadcrumb-item active" aria-current="page"><%= post.title %></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Main Post -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2 class="mb-1"><%= post.title %></h2>
+                        <div class="d-flex align-items-center text-muted small">
+                            <span class="me-3">
+                                <i class="fas fa-user me-1"></i>
+                                <%= post.authorName %>
+                            </span>
+                            <span class="me-3">
+                                <i class="fas fa-calendar me-1"></i>
+                                <%= new Date(post.createdAt).toLocaleDateString() %>
+                            </span>
+                            <span class="me-3">
+                                <i class="fas fa-eye me-1"></i>
+                                <%= post.views || 0 %> views
+                            </span>
+                            <span class="me-3">
+                                <i class="fas fa-comments me-1"></i>
+                                <%= post.replies || 0 %> replies
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <% if (post.updatedAt !== post.createdAt) { %>
+                            <small class="text-muted d-block">
+                                <i class="fas fa-edit me-1"></i>Edited
+                            </small>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="post-content mb-3">
+                    <%= post.content.replace(/\n/g, '<br>') %>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-outline-primary btn-sm me-2" onclick="likePost('<%= post.id %>')">
+                            <i class="fas fa-heart me-1"></i>
+                            <span id="likes-<%= post.id %>"><%= post.likes || 0 %></span> Likes
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="sharePost()">
+                            <i class="fas fa-share me-1"></i>Share
+                        </button>
+                    </div>
+                    
+                    <% if (isAuthenticated && user.id === post.authorId) { %>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                            </ul>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>
+                    Comments (<%= comments.length %>)
+                </h5>
+            </div>
+            <div class="card-body">
+                <% if (isAuthenticated) { %>
+                    <!-- Comment Form -->
+                    <div class="mb-4">
+                        <form action="/forum/post/<%= post.id %>/comment" method="POST">
+                            <div class="mb-3">
+                                <label for="commentContent" class="form-label">Add a comment</label>
+                                <textarea class="form-control" id="commentContent" name="content" rows="3" placeholder="Share your thoughts..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Post Comment
+                            </button>
+                        </form>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Please <a href="/auth/login" class="alert-link">login</a> to add a comment.
+                    </div>
+                <% } %>
+
+                <hr>
+
+                <!-- Comments List -->
+                <% if (comments && comments.length > 0) { %>
+                    <% comments.forEach(comment => { %>
+                        <div class="comment mb-3 pb-3 border-bottom">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <%= comment.authorName.charAt(0).toUpperCase() %>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1"><%= comment.authorName %></h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                <%= new Date(comment.createdAt).toLocaleDateString() %>
+                                            </small>
+                                        </div>
+                                        <% if (isAuthenticated && user.id === comment.authorId) { %>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                                                </ul>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                    <p class="mb-2 mt-2"><%= comment.content %></p>
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-sm btn-outline-secondary me-2">
+                                            <i class="fas fa-heart me-1"></i>
+                                            <%= comment.likes || 0 %>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-reply me-1"></i>Reply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments fa-2x text-muted mb-3"></i>
+                        <h6>No comments yet</h6>
+                        <p class="text-muted">Be the first to share your thoughts!</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Sidebar -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">Post Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <small class="text-muted">Category:</small><br>
+                    <a href="/forum/category/<%= category.id %>" class="text-decoration-none">
+                        <%= category.name %>
+                    </a>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Author:</small><br>
+                    <%= post.authorName %>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Created:</small><br>
+                    <%= new Date(post.createdAt).toLocaleString() %>
+                </div>
+                <% if (post.updatedAt !== post.createdAt) { %>
+                    <div class="mb-2">
+                        <small class="text-muted">Last Updated:</small><br>
+                        <%= new Date(post.updatedAt).toLocaleString() %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Related Posts</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">More posts from this category will appear here.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function likePost(postId) {
+    fetch(`/forum/post/${postId}/like`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`likes-${postId}`).textContent = data.likes;
+        }
+    })
+    .catch(error => {
+        console.error('Error liking post:', error);
+    });
+}
+
+function sharePost() {
+    if (navigator.share) {
+        navigator.share({
+            title: '<%= post.title %>',
+            text: '<%= post.content.substring(0, 100) %>...',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy URL to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Post URL copied to clipboard!');
+        });
+    }
+}
+</script>
+
+<%- include('../partials/footer') %> 

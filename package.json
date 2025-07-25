@@ -6,6 +6,13 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "setup-jsonbin": "node scripts/setup-jsonbin.js",
+    "init-forum": "node scripts/init-forum.js",
+    "check-users": "node scripts/check-users.js",
+    "restore-users": "node scripts/restore-users.js",
+    "restore-categories": "node scripts/restore-categories.js",
+    "restore-forum-data": "node scripts/restore-forum-data.js",
+    "test-forum-data": "node scripts/test-forum-data.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

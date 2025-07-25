@@ -16,8 +16,18 @@ function isNotAuthenticated(req, res, next) {
 
 // Middleware to make user data available to all views
 function userToLocals(req, res, next) {
-    res.locals.user = req.user || null;
-    res.locals.isAuthenticated = req.isAuthenticated();
+    // Check if user exists and is valid
+    if (req.user && req.user.id) {
+        res.locals.user = req.user;
+        res.locals.isAuthenticated = true;
+    } else {
+        res.locals.user = null;
+        res.locals.isAuthenticated = false;
+        // Clear the session if user is invalid
+        if (req.session && req.session.passport) {
+            delete req.session.passport;
+        }
+    }
     next();
 }
 

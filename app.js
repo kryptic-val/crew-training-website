@@ -34,13 +34,27 @@ app.use(flash());
 // Make user data available to all views
 app.use(userToLocals);
 
+// Handle invalid sessions
+app.use((req, res, next) => {
+    if (req.session && req.session.passport && !req.user) {
+        console.log('Clearing invalid session');
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+            }
+        });
+    }
+    next();
+});
+
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Import authentication routes
+// Import routes
 const authRoutes = require('./routes/auth');
+const forumRoutes = require('./routes/forum');
 
 // Routes
 app.get('/', (req, res) => {
@@ -57,6 +71,9 @@ app.get('/training', (req, res) => {
 
 // Authentication routes
 app.use('/auth', authRoutes);
+
+// Forum routes
+app.use('/forum', forumRoutes);
 
 // Start server
 app.listen(PORT, () => {

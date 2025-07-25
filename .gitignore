@@ -134,4 +134,7 @@ config/local.js
 config/local.json
 
 # JSONbin backup (if any)
-jsonbin_backup.json 
+jsonbin_backup.json
+
+# Setup documentation (temporary)
+GITHUB_SETUP.md 

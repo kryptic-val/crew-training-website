@@ -26,7 +26,30 @@ async function getUsers() {
 // Helper function to save users to JSONbin
 async function saveUsers(users) {
     try {
-        await axios.put(JSONBIN_URL, { users }, {
+        // Get current complete data structure
+        const response = await axios.get(JSONBIN_URL, {
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY
+            }
+        });
+        const currentData = response.data.record;
+        
+        // Merge users with existing data, preserving all other arrays
+        const mergedData = {
+            users: users,
+            categories: currentData.categories || [],
+            posts: currentData.posts || [],
+            comments: currentData.comments || []
+        };
+        
+        console.log('Saving user data:', {
+            users: mergedData.users.length,
+            categories: mergedData.categories.length,
+            posts: mergedData.posts.length,
+            comments: mergedData.comments.length
+        });
+        
+        await axios.put(JSONBIN_URL, mergedData, {
             headers: {
                 'X-Master-Key': JSONBIN_API_KEY,
                 'Content-Type': 'application/json'
@@ -72,9 +95,17 @@ passport.deserializeUser(async (id, done) => {
     try {
         const users = await getUsers();
         const user = users.find(u => u.id === id);
+        
+        if (!user) {
+            console.log(`User not found during deserialization: ${id}`);
+            console.log('Available users:', users.map(u => ({ id: u.id, email: u.email })));
+            return done(null, false);
+        }
+        
         done(null, user);
     } catch (error) {
-        done(error);
+        console.error('Error during user deserialization:', error);
+        done(null, false);
     }
 });
 
